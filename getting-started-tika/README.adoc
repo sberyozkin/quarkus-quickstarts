@@ -1,0 +1,13 @@
+= Tika Quickstart
+
+This quickstart project demonstrates how to use Apache Tika Quarkus extension.
+Build and start the application, either in the HotSpot or native mode.
+
+Text:
+
+curl -v -X POST -H "Content-type: text/plain" -d @target/classes/quarkus.txt http://localhost:8080/tika/parse
+
+PDF:
+
+curl -v -X POST -H "Content-type: application/pdf" -d @target/classes/quarkus.pdf http://localhost:8080/tika/parse
+
