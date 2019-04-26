@@ -10,14 +10,14 @@ import static org.hamcrest.CoreMatchers.is;
 public class GreetingResourceTest {
 
     @Test
-    public void testHelloEndpoint() {
+    public void testHelloQuarkusTextFormat() {
         given()
           .when().header("Content-Type", "text/plain")
-                 .body("hello quarkus")
+                 .body("Hello Quarkus")
                  .post("/tika/parse")
           .then()
              .statusCode(200)
-             .body(is("hello quarkus"));
+             .body(is("Hello Quarkus"));
     }
 
 }
