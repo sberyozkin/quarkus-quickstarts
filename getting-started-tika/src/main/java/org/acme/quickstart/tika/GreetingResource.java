@@ -16,7 +16,7 @@ public class GreetingResource {
 
     @POST
     @Path("/parse")
-    @Consumes(MediaType.TEXT_PLAIN)
+    @Consumes({"text/plain", "application/pdf"})
     @Produces(MediaType.TEXT_PLAIN)
     public String hello(TikaContent body) {
         return body.getContent();
