@@ -18,7 +18,7 @@ public class GreetingResource {
     @Path("/parse")
     @Consumes({"text/plain", "application/pdf", "application/vnd.oasis.opendocument.text"})
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello(TikaContent body) {
-        return body.getContent();
+    public String hello(TikaContent content) {
+        return content.getText();
     }
 }
