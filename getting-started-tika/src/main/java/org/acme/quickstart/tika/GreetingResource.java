@@ -8,7 +8,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import io.quarkus.tika.runtime.jaxrs.TikaContent;
+import io.quarkus.tika.TikaContent;
 
 @Path("/tika")
 public class GreetingResource {
