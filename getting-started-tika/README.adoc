@@ -7,7 +7,11 @@ Text:
 
 curl -v -X POST -H "Content-type: text/plain" -d @target/classes/quarkus.txt http://localhost:8080/tika/parse
 
-PDF:
+ODT:
 
-curl -v -X POST -H "Content-type: application/pdf" -d @target/classes/quarkus.pdf http://localhost:8080/tika/parse
+curl -v -X POST -H "Content-type: application/vnd.oasis.opendocument.text" --data-binary @target/classes/quarkus.odt http://localhost:8080/tika/parse
+
+PDF (is not supported in the native mode yet):
+
+curl -v -X POST -H "Content-type: application/pdf" --data-binary @target/classes/quarkus.pdf http://localhost:8080/tika/parse
 
