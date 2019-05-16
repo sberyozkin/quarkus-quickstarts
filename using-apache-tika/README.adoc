@@ -11,7 +11,7 @@ ODT:
 
 curl -v -X POST -H "Content-type: application/vnd.oasis.opendocument.text" --data-binary @target/classes/quarkus.odt http://localhost:8080/tika/parse
 
-PDF (is not supported in the native mode yet):
+PDF:
 
 curl -v -X POST -H "Content-type: application/pdf" --data-binary @target/classes/quarkus.pdf http://localhost:8080/tika/parse
 
