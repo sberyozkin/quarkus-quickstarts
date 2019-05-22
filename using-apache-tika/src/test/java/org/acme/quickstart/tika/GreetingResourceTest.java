@@ -1,41 +1,57 @@
 package org.acme.quickstart.tika;
 
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.containsString;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
+import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 public class GreetingResourceTest {
 
     @Test
     public void testHelloQuarkusTextFormat() throws Exception {
-        doTestHelloQuarkus("text/plain", "txt");
+    	checkText("text/plain", "txt");
+    	checkMetadata("text/plain", "txt");
     }
 
     @Test
     public void testHelloQuarkusOdtFormat() throws Exception {
-        doTestHelloQuarkus("application/vnd.oasis.opendocument.text", "odt");
+    	checkText("application/vnd.oasis.opendocument.text", "odt");
+    	checkMetadata("application/vnd.oasis.opendocument.text", "odt");
     }
 
     @Test
     public void testHelloQuarkusPdfFormat() throws Exception {
-        doTestHelloQuarkus("application/pdf", "pdf");
+    	checkText("application/pdf", "pdf");
+    	checkMetadata("application/pdf", "pdf");
     }
 
-    private void doTestHelloQuarkus(String contentType, String extension) throws Exception {
+    private void checkText(String contentType, String extension) throws Exception {
         given()
           .when().header("Content-Type", contentType)
                  .body(readQuarkusFile("quarkus." + extension))
-                 .post("/tika/parse")
+                 .post("/parse/text")
           .then()
              .statusCode(200)
              .body(is("Hello Quarkus"));
     }
+    
+    private void checkMetadata(String contentType, String extension) throws Exception {
+    	given()
+        .when().header("Content-Type", contentType)
+               .body(readQuarkusFile("quarkus." + extension))
+               .post("/parse/metadata")
+        .then()
+           .statusCode(200)
+           .body(containsString("X-Parsed-By"));
+		
+	}
 
     private byte[] readQuarkusFile(String fileName) throws Exception {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(fileName)) {
