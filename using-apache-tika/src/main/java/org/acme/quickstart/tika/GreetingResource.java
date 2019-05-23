@@ -18,7 +18,7 @@ public class GreetingResource {
     @Path("/text")
     @Consumes({"text/plain", "application/pdf", "application/vnd.oasis.opendocument.text"})
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello(Content content) {
+    public String extractText(Content content) {
         return content.getText();
     }
     
@@ -26,7 +26,7 @@ public class GreetingResource {
     @Path("/metadata")
     @Consumes({"text/plain", "application/pdf", "application/vnd.oasis.opendocument.text"})
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello(Metadata metadata) {
+    public String extractMetadata(Metadata metadata) {
         return metadata.getNames().toString();
     }
 }
