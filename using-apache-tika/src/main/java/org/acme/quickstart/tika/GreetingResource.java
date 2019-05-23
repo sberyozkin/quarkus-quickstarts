@@ -7,8 +7,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import io.quarkus.tika.Content;
 import io.quarkus.tika.Metadata;
-import io.quarkus.tika.TikaContent;
 
 @Path("/parse")
 public class GreetingResource {
@@ -18,7 +18,7 @@ public class GreetingResource {
     @Path("/text")
     @Consumes({"text/plain", "application/pdf", "application/vnd.oasis.opendocument.text"})
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello(TikaContent content) {
+    public String hello(Content content) {
         return content.getText();
     }
     
