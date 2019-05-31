@@ -29,7 +29,7 @@
         <module>rest-json</module>
         <module>getting-started-knative</module>
         <module>getting-started-testing</module>
-        <module>getting-started-tika</module> 
+        <module>using-apache-tika</module> 
         <module>microprofile-fault-tolerance</module>
         <module>microprofile-health</module>
         <module>microprofile-metrics</module>
