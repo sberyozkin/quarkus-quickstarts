@@ -15,11 +15,6 @@ import io.quarkus.test.junit.QuarkusTest;
 public class TikaParserResourceTest {
 
     @Test
-    public void testHelloQuarkusOdtFormat() throws Exception {
-    	checkText("application/vnd.oasis.opendocument.text", "odt");
-    }
-
-    @Test
     public void testHelloQuarkusPdfFormat() throws Exception {
     	checkText("application/pdf", "pdf");
     }
