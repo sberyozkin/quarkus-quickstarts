@@ -42,10 +42,10 @@ public class TokenSecuredResourceTest {
           .get("/secured/permit-all")
           .andReturn();
 
-        System.out.printf("+++ testHelloEndpoint, response: %s\n", response.asString());
+        System.out.printf("+++ testHelloEndpoint, permit-all response: %s\n", response.asString());
         response.then()
           .statusCode(200)
-          .body(containsString("hello + anonymous, isSecure: false"));
+          .body(containsString("hello + anonymous, isSecure: false, authScheme: null, hasJWT: false"));
     }
 
     @Test
@@ -55,9 +55,10 @@ public class TokenSecuredResourceTest {
                 .when()
                 .get("/secured/roles-allowed").andReturn();
 
-        Assertions.assertEquals(HttpURLConnection.HTTP_OK, response.getStatusCode());
-        String replyString = response.body().asString();
-        System.out.println(replyString);
+        System.out.printf("+++ testHelloEndpoint, roles allowed response: %s\n", response.asString());
+        response.then()
+          .statusCode(200)
+          .body(containsString("hello + jdoe@quarkus.io, isSecure: false, authScheme: Bearer, hasJWT: true"));
     }
 
     @Test
