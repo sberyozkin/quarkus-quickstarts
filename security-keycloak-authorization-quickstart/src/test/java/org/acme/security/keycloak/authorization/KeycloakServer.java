@@ -14,15 +14,14 @@ public class KeycloakServer implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public Map<String, String> start() {
-        keycloak = new FixedHostPortGenericContainer("quay.io/keycloak/keycloak:" + System.getProperty("keycloak.version"))
-                .withFixedExposedPort(8180, 8080)
+        keycloak = new FixedHostPortGenericContainer("registry.access.redhat.com/" + System.getProperty("keycloak.docker.image"))
                 .withFixedExposedPort(8543, 8443)
                 .withEnv("DB_VENDOR", "H2")
                 .withEnv("KEYCLOAK_USER", "admin")
                 .withEnv("KEYCLOAK_PASSWORD", "admin")
                 .withEnv("KEYCLOAK_IMPORT", "/tmp/realm.json")
                 .withClasspathResourceMapping("quarkus-realm.json", "/tmp/realm.json", BindMode.READ_ONLY)
-                .waitingFor(Wait.forHttp("/auth"));
+                .waitingFor(Wait.forHttps("/auth"));
         keycloak.start();
         return Collections.emptyMap();
     }

@@ -15,6 +15,7 @@
         <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
         <quarkus.platform.version>999-SNAPSHOT</quarkus.platform.version>
         <keycloak.version>12.0.2</keycloak.version>
+        <keycloak.docker.image>redhat-sso-7/sso73-openshift</keycloak.docker.image>
         <testcontainers.version>1.15.1</testcontainers.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -77,6 +78,7 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                         <keycloak.version>${keycloak.version}</keycloak.version>
+                        <keycloak.docker.image>${keycloak.docker.image}</keycloak.docker.image>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -140,6 +142,7 @@
                                         </java.util.logging.manager>
                                         <maven.home>${maven.home}</maven.home>
                                         <keycloak.version>${keycloak.version}</keycloak.version>
+                                        <keycloak.docker.image>${keycloak.docker.image}</keycloak.docker.image>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
