@@ -28,11 +28,19 @@ public class FrontendResource {
     @RestClient
     RestClientWithTokenPropagationFilter restClientWithTokenPropagationFilter;
 
+//    @GET
+//    @Path("user-name-with-oidc-client-token")
+//    @Produces("text/plain")
+//    public Uni<String> getUserNameWithOidcClientToken() {
+//        return restClientWithOidcClientFilter.getUserName();
+//    }
+    
     @GET
     @Path("user-name-with-oidc-client-token")
     @Produces("text/plain")
     public Uni<String> getUserNameWithOidcClientToken() {
-        return restClientWithOidcClientFilter.getUserName();
+        return restClientWithOidcClientFilter.getUserName().onFailure()
+        		.recoverWithUni(restClientWithOidcClientFilter.getUserName());
     }
     
     @GET
