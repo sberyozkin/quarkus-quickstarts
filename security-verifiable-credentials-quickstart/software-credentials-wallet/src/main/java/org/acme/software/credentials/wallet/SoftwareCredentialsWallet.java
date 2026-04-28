@@ -38,6 +38,7 @@ import io.vertx.mutiny.core.MultiMap;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -45,6 +46,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
@@ -315,7 +317,9 @@ public class SoftwareCredentialsWallet {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Authenticated
     @Produces("text/plain")
-    public Response presentCredential(@FormParam("response_uri") String credentialResponseUri,
+    public Response presentCredential(
+            @CookieParam("vp_state") Cookie vpState,
+            @FormParam("response_uri") String credentialResponseUri,
             @FormParam("dcql_query") String dcqlQuery, @FormParam("state") String state,
             @FormParam("credentialId") String credentialId, @FormParam("disclosure") Set<String> approvedDisclosures)
             throws Exception {
@@ -328,7 +332,8 @@ public class SoftwareCredentialsWallet {
 
         String vp = new VerifiablePresentation(vc, approvedDisclosures).getVerifiablePresentationString();
 
-        // TODO: set a correct verifier audience
+        // TODO: set a correct verifier audience: client id of the verifier
+        // TODO: add a nonce claim too
         vp = addKeyBinding(vp, "best-software-company", vc.getKeyBindingPrivateKey());
 
         MultiMap presentationForm = MultiMap.caseInsensitiveMultiMap();
@@ -337,6 +342,7 @@ public class SoftwareCredentialsWallet {
 
         JsonObject json = oidcProviderClient.getWebClient().postAbs(credentialResponseUri)
                 .bearerTokenAuthentication(accessToken.getToken())
+                .putHeader("Cookie", "vp_state=" + vpState.getValue())
                 .putHeader("Content-Type", "application/x-www-form-urlencoded").putHeader("Accept", "application/json")
                 .sendForm(presentationForm).await().indefinitely().bodyAsJsonObject();
 

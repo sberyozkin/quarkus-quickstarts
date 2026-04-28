@@ -30,6 +30,7 @@ import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.AuthenticationFailedException;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -111,7 +112,11 @@ public class BestSoftwareCompany {
                 + oidcCredentialIssuerMetadata.getCredentialConfigurations().get(credentialId).scope() + "&nonce="
                 + nonce + "&state=" + state;
 
-        // and have a state cookie
+        rc.response().addCookie(Cookie.cookie("vp_state", state)
+                        .setPath("/")
+                        .setHttpOnly(true)
+                        //.setSecure(true)
+                        .setMaxAge(300));
 
         String webLink = walletHost + "/software-credentials-wallet/credential-presentation?" + authorizationRequest;
         // String walletQrCode = QrCodeUtils.generateQrCode("openid4vp://" + authorizationRequest);
@@ -156,6 +161,17 @@ public class BestSoftwareCompany {
     public PresentationConfirmation presentation(@FormParam("vp_token") String vpToken,
             @FormParam("state") String state, @Context UriInfo uriInfo) {
         LOG.infof("Credential %s was accepted for %s", vpToken, principal.getName());
+
+        io.vertx.core.http.Cookie stateCookie = rc.request().getCookie("vp_state");
+        if (stateCookie == null) {
+            LOG.warn("State cookie is missing");
+            throw new AuthenticationFailedException();
+        }
+        if (!stateCookie.getValue().equals(state)) {
+            LOG.warn("State cookie does not match the presentation state");
+            throw new AuthenticationFailedException();
+        }
+        rc.response().removeCookie("vc_state");
 
         SDJWT sdJwt = SDJWT.parse(vpToken);
         verifyKeyBinding(sdJwt, vpToken);
