@@ -171,7 +171,7 @@ public class BestSoftwareCompany {
             LOG.warn("State cookie does not match the presentation state");
             throw new AuthenticationFailedException();
         }
-        rc.response().removeCookie("vc_state");
+        rc.response().removeCookie("vp_state");
 
         SDJWT sdJwt = SDJWT.parse(vpToken);
         verifyKeyBinding(sdJwt, vpToken);
