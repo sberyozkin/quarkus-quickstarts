@@ -251,6 +251,8 @@ public class BestSoftwareCompany {
             LOG.warn("Key binding JWT sd_hash does not match the SD-JWT hash");
             throw new AuthenticationFailedException();
         }
+        // TODO: verify aud is the client id set in the presentation request
+        // TODO: verify nonce is the one set in the presentation request
     }
 
     private static TokenVerificationResult verifyCredentialJwt(OidcProvider provider, OidcTenantConfig oidcConfig,
