@@ -6,7 +6,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.acme.software.credentials.wallet.VerifiableCredentialEntity.CredentialId;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -228,7 +227,9 @@ public class SoftwareCredentialsWallet {
     @Authenticated
     @Transactional
     public Response credentialPresentation(@QueryParam("response_uri") String credentialResponseUri,
-            @QueryParam("dcql_query") String dcqlQuery, @QueryParam("state") String state, @Context UriInfo uriInfo) {
+            @QueryParam("client_id") String clientId,
+            @QueryParam("dcql_query") String dcqlQuery, @QueryParam("state") String state,
+            @QueryParam("nonce") String nonce, @Context UriInfo uriInfo) {
 
         JsonObject dcql = new JsonObject(dcqlQuery);
 
@@ -242,12 +243,14 @@ public class SoftwareCredentialsWallet {
             // request parameter
             CredentialConfiguration cred = oidcCredentialIssuerMetadata.getCredentialConfigurations().get(credentialId);
             TemplateInstance templateInstance = walletCredentialPresentationAgreement.data("name", getUserFirstName())
-                    .data("dcql_query", dcqlQuery).data("state", state).data("response_uri", credentialResponseUri)
+                    .data("dcql_query", dcqlQuery).data("state", state).data("nonce", nonce)
+                    .data("client_id", clientId)
+                    .data("response_uri", credentialResponseUri)
                     .data("credential_metadata", cred).data("credential_verifier", "Best Software Company");
             return Response.ok(templateInstance).build();
         }
 
-        return Response.ok(getCredentialDisclosures(vc, credentialResponseUri, dcqlQuery, state)).build();
+        return Response.ok(getCredentialDisclosures(vc, credentialResponseUri, dcqlQuery, state, nonce, clientId)).build();
     }
 
     @POST
@@ -256,7 +259,9 @@ public class SoftwareCredentialsWallet {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Authenticated
     public Response credentialPresentationAgreement(@FormParam("response_uri") String credentialResponseUri,
-            @FormParam("dcql_query") String dcqlQuery, @FormParam("state") String state, @Context UriInfo uriInfo) {
+            @FormParam("client_id") String clientId,
+            @FormParam("dcql_query") String dcqlQuery, @FormParam("state") String state,
+            @FormParam("nonce") String nonce, @Context UriInfo uriInfo) {
 
         JsonObject dcql = new JsonObject(dcqlQuery);
 
@@ -266,7 +271,9 @@ public class SoftwareCredentialsWallet {
 
         URI uri = uriInfo.getBaseUriBuilder().path("software-credentials-wallet")
                 .path("credential-presentation-completion").queryParam("response_uri", credentialResponseUri)
-                .queryParam("state", state).queryParam("dcql_query", OidcCommonUtils.urlEncode(dcqlQuery))
+                .queryParam("client_id", clientId)
+                .queryParam("state", state).queryParam("nonce", nonce)
+                .queryParam("dcql_query", OidcCommonUtils.urlEncode(dcqlQuery))
                 .queryParam("id", credentialId).build();
         return Response.seeOther(uri).build();
 
@@ -278,15 +285,19 @@ public class SoftwareCredentialsWallet {
     @Authenticated
     @Transactional
     public TemplateInstance completeCredentialPresentation(@QueryParam("response_uri") String credentialResponseUri,
-            @QueryParam("dcql_query") String dcqlQuery, @QueryParam("state") String state) {
+            @QueryParam("client_id") String clientId,
+            @QueryParam("dcql_query") String dcqlQuery, @QueryParam("state") String state,
+            @QueryParam("nonce") String nonce) {
         persistVerifiableCredential(verifiableCredential);
-        return getCredentialDisclosures(verifiableCredential, credentialResponseUri, dcqlQuery, state);
+        return getCredentialDisclosures(verifiableCredential, credentialResponseUri, dcqlQuery, state, nonce, clientId);
     }
 
     private TemplateInstance getCredentialDisclosures(VerifiableCredential vc, String credentialResponseUri,
-            String dcqlQuery, String state) {
+            String dcqlQuery, String state, String nonce, String clientId) {
         return walletPresentCredential.data("credential_verifier", "Best Software Company")
-                .data("dcql_query", dcqlQuery).data("state", state).data("response_uri", credentialResponseUri)
+                .data("dcql_query", dcqlQuery).data("state", state).data("nonce", nonce)
+                .data("client_id", clientId)
+                .data("response_uri", credentialResponseUri)
                 .data("credential_metadata",
                         oidcCredentialIssuerMetadata.getCredentialConfigurations().get(vc.getCredentialId()))
                 .data("disclosures", vc.getDisclosures());
@@ -320,28 +331,25 @@ public class SoftwareCredentialsWallet {
     public Response presentCredential(
             @CookieParam("vp_state") Cookie vpState,
             @FormParam("response_uri") String credentialResponseUri,
+            @FormParam("client_id") String clientId,
             @FormParam("dcql_query") String dcqlQuery, @FormParam("state") String state,
+            @FormParam("nonce") String nonce,
             @FormParam("credentialId") String credentialId, @FormParam("disclosure") Set<String> approvedDisclosures)
             throws Exception {
 
         VerifiableCredential vc = findCredential(credentialId);
 
-        // This is not how OpenId VP works which is primarily designed about personal
-        // Wallets installed on mobile phones
         LOG.infof("Presenting the credential to %s", credentialResponseUri);
 
         String vp = new VerifiablePresentation(vc, approvedDisclosures).getVerifiablePresentationString();
 
-        // TODO: set a correct verifier audience: client id of the verifier
-        // TODO: add a nonce claim too
-        vp = addKeyBinding(vp, "best-software-company", vc.getKeyBindingPrivateKey());
+        vp = addKeyBinding(vp, clientId, nonce, vc.getKeyBindingPrivateKey());
 
         MultiMap presentationForm = MultiMap.caseInsensitiveMultiMap();
         presentationForm.add("vp_token", vp);
         presentationForm.add("state", state);
 
         JsonObject json = oidcProviderClient.getWebClient().postAbs(credentialResponseUri)
-                .bearerTokenAuthentication(accessToken.getToken())
                 .putHeader("Cookie", "vp_state=" + vpState.getValue())
                 .putHeader("Content-Type", "application/x-www-form-urlencoded").putHeader("Accept", "application/json")
                 .sendForm(presentationForm).await().indefinitely().bodyAsJsonObject();
@@ -401,7 +409,7 @@ public class SoftwareCredentialsWallet {
         return firstName == null ? idToken.getName() : firstName;
     }
 
-    private String addKeyBinding(String vp, String verifierAud, String keyBindingPrivateKey) {
+    private String addKeyBinding(String vp, String verifierAud, String nonce, String keyBindingPrivateKey) {
         try {
             EllipticCurveJsonWebKey jwk = (EllipticCurveJsonWebKey) JsonWebKey.Factory
                     .newJwk(JsonUtil.parseJson(keyBindingPrivateKey));
@@ -409,8 +417,7 @@ public class SoftwareCredentialsWallet {
             byte[] sdHashBytes = OidcUtils.getSha256Digest(vp.getBytes(StandardCharsets.US_ASCII));
             String sdHash = Base64.getUrlEncoder().withoutPadding().encodeToString(sdHashBytes);
 
-            // TODO Use Keycloak nonce endpoint ?
-            String jwt = Jwt.audience(verifierAud).claim("sd_hash", sdHash).claim("nonce", UUID.randomUUID().toString())
+            String jwt = Jwt.audience(verifierAud).claim("sd_hash", sdHash).claim("nonce", nonce)
                     .jws().type("kb+jwt").sign(jwk.getPrivateKey());
 
             return vp + jwt;
