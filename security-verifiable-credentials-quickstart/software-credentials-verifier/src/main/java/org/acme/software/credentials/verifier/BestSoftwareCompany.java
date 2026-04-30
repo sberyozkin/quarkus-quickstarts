@@ -82,18 +82,11 @@ public class BestSoftwareCompany {
         credential.put("id", credentialId);
         creds.add(credential);
 
-        String state = rc.get("vp_state");
-        String nonce = rc.get("vp_nonce");
+        String authorizationUri = rc.get("vp_authorization_uri");
 
-        // client_id=software-credentials-verifier
-        String presentationUrl = verifierHost + "/best-software-company/presentation";
-
-        String authorizationRequest = "response_mode=direct_post" + "&client_id=redirect_uri:"
-                + OidcCommonUtils.urlEncode(presentationUrl) + "&response_uri="
-                + OidcCommonUtils.urlEncode(presentationUrl) + "&response_type=" + "vp_token" + "&dcql_query="
+        String authorizationRequest = authorizationUri + "&dcql_query="
                 + OidcCommonUtils.urlEncode(dcqlQuery.toString()) + "&scope="
-                + oidcCredentialIssuerMetadata.getCredentialConfigurations().get(credentialId).scope() + "&nonce="
-                + nonce + "&state=" + state;
+                + oidcCredentialIssuerMetadata.getCredentialConfigurations().get(credentialId).scope();
 
         String webLink = walletHost + "/software-credentials-wallet/credential-presentation?" + authorizationRequest;
         // String walletQrCode = QrCodeUtils.generateQrCode("openid4vp://" + authorizationRequest);

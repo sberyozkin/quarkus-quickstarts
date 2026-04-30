@@ -19,6 +19,7 @@ import com.authlete.sd.SDJWT;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.quarkus.oidc.OidcTenantConfig;
+import io.quarkus.oidc.common.runtime.OidcCommonUtils;
 import io.quarkus.oidc.runtime.OidcProvider;
 import io.quarkus.oidc.runtime.OidcUtils;
 import io.quarkus.oidc.runtime.TenantConfigBean;
@@ -67,8 +68,16 @@ public class VerifiablePresentationAuthenticationMechanism implements HttpAuthen
             String state = UUID.randomUUID().toString();
             String nonce = UUID.randomUUID().toString();
             stateToNonce.put(state, nonce);
-            context.put("vp_state", state);
-            context.put("vp_nonce", nonce);
+
+            String presentationUrl = verifierHost + PRESENTATION_PATH;
+            String authorizationUri = "response_mode=direct_post"
+                    + "&client_id=redirect_uri:" + OidcCommonUtils.urlEncode(presentationUrl)
+                    + "&response_uri=" + OidcCommonUtils.urlEncode(presentationUrl)
+                    + "&response_type=vp_token"
+                    + "&nonce=" + nonce
+                    + "&state=" + state;
+            context.put("vp_authorization_uri", authorizationUri);
+
             context.response().addCookie(Cookie.cookie("vp_state", state)
                     .setPath("/")
                     .setHttpOnly(true)
