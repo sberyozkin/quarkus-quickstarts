@@ -7,7 +7,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 
-import io.quarkiverse.oidvp.CredentialIssuerMetadata;
+import io.quarkiverse.oidvc.CredentialIssuerMetadata;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.oidc.AccessTokenCredential;

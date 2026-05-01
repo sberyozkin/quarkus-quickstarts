@@ -9,8 +9,8 @@ import org.jboss.logging.Logger;
 
 import com.authlete.sd.SDJWT;
 
-import io.quarkiverse.oidvp.CredentialIssuerMetadata;
-import io.quarkiverse.oidvp.CredentialIssuerMetadata.CredentialConfiguration;
+import io.quarkiverse.oidvc.CredentialIssuerMetadata;
+import io.quarkiverse.oidvc.CredentialIssuerMetadata.CredentialConfiguration;
 import io.quarkus.oidc.common.runtime.OidcCommonUtils;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
