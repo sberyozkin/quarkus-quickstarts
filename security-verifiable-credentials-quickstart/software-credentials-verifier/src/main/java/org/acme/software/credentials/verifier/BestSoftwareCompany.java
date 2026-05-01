@@ -11,6 +11,8 @@ import com.authlete.sd.SDJWT;
 
 import io.quarkiverse.oidvc.CredentialIssuerMetadata;
 import io.quarkiverse.oidvc.CredentialIssuerMetadata.CredentialConfiguration;
+import io.quarkiverse.oidvp.VerifiablePresentation;
+import io.quarkiverse.oidvp.VerifiablePresentations;
 import io.quarkus.oidc.common.runtime.OidcCommonUtils;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
@@ -108,7 +110,7 @@ public class BestSoftwareCompany {
         String vctPath = URI.create(vct).getPath();
         String vctValue = vctPath.startsWith("/") ? vctPath.substring(1) : vctPath;
 
-        List<VerifiedPresentation> presentations = verifiablePresentations.getAll();
+        List<VerifiablePresentation> presentations = verifiablePresentations.getAll();
         SDJWT sdjwt = presentations.get(0).sdjwt();
 
         return bestSoftwareCompanyPresentationConfirmation.data("disclosures", sdjwt.getDisclosures())
