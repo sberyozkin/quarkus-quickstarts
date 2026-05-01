@@ -9,9 +9,9 @@ import org.jboss.logging.Logger;
 
 import com.authlete.sd.SDJWT;
 
+import io.quarkiverse.oidvp.CredentialIssuerMetadata;
+import io.quarkiverse.oidvp.CredentialIssuerMetadata.CredentialConfiguration;
 import io.quarkus.oidc.common.runtime.OidcCommonUtils;
-import io.quarkus.oidcvc.OidcCredentialIssuerMetadata;
-import io.quarkus.oidcvc.OidcCredentialIssuerMetadata.CredentialConfiguration;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.security.Authenticated;
@@ -51,7 +51,7 @@ public class BestSoftwareCompany {
     Template bestSoftwareCompanyPresentationConfirmation;
 
     @Inject
-    OidcCredentialIssuerMetadata oidcCredentialIssuerMetadata;
+    CredentialIssuerMetadata oidcCredentialIssuerMetadata;
 
     @Inject
     RoutingContext rc;

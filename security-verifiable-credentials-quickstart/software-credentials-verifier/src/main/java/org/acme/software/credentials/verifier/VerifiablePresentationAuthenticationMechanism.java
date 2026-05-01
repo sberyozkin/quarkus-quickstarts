@@ -137,7 +137,7 @@ public class VerifiablePresentationAuthenticationMechanism implements HttpAuthen
         verifyDisclosureHashes(sdJwt, credentialJwtResult);
         verifyKeyBinding(sdJwt, credentialJwtResult, state);
 
-        JsonObject credentialClaims = credentialJwtResult.getLocalVerificationResult();
+        JsonObject credentialClaims = credentialJwtResult.localVerificationResult();
         String sub = credentialClaims.getString("sub");
         String vct = credentialClaims.getString("vct");
 
@@ -219,7 +219,7 @@ public class VerifiablePresentationAuthenticationMechanism implements HttpAuthen
     }
 
     private void verifyDisclosureHashes(SDJWT sdJwt, TokenVerificationResult credentialJwtResult) {
-        JsonObject credentialClaims = credentialJwtResult.getLocalVerificationResult();
+        JsonObject credentialClaims = credentialJwtResult.localVerificationResult();
         JsonArray sdArray = credentialClaims.getJsonArray("_sd");
         if (sdArray == null) {
             LOG.warn("Credential JWT does not contain _sd array");
@@ -234,7 +234,7 @@ public class VerifiablePresentationAuthenticationMechanism implements HttpAuthen
     }
 
     private void verifyKeyBinding(SDJWT sdJwt, TokenVerificationResult credentialJwtResult, String state) {
-        JsonObject credentialClaims = credentialJwtResult.getLocalVerificationResult();
+        JsonObject credentialClaims = credentialJwtResult.localVerificationResult();
 
         JsonObject cnf = credentialClaims.getJsonObject("cnf");
         if (cnf == null) {

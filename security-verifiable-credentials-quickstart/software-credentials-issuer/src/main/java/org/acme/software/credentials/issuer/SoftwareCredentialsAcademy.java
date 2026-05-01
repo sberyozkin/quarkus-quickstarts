@@ -7,13 +7,14 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.oidvp.CredentialIssuerMetadata;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.oidc.AccessTokenCredential;
 import io.quarkus.oidc.IdToken;
 import io.quarkus.oidc.OidcProviderClient;
 import io.quarkus.oidc.common.runtime.OidcCommonUtils;
-import io.quarkus.oidcvc.OidcCredentialIssuerMetadata;
+import io.quarkus.oidc.runtime.OidcProviderClientImpl;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.security.Authenticated;
@@ -21,6 +22,7 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
+import io.vertx.mutiny.ext.web.client.WebClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -56,7 +58,7 @@ public class SoftwareCredentialsAcademy {
     AccessTokenCredential accessToken;
 
     @Inject
-    OidcCredentialIssuerMetadata oidcCredentialIssuerMetadata;
+    CredentialIssuerMetadata credentialIssuerMetadata;
 
     @Inject
     OidcProviderClient oidcProviderClient;
@@ -86,7 +88,7 @@ public class SoftwareCredentialsAcademy {
     @Authenticated
     public TemplateInstance getCredentialConfigurations() {
         return softwareCredentialsAcademyOffers
-                .data("credentials", oidcCredentialIssuerMetadata.getCredentialConfigurations().values())
+                .data("credentials", credentialIssuerMetadata.getCredentialConfigurations().values())
                 .data("issuerHost", issuerHost)
                 .data("verifierHost", verifierHost)
                 .data("name", getUserFirstName());
@@ -107,7 +109,7 @@ public class SoftwareCredentialsAcademy {
                 // .data("base64WalletQrCode", walletQrCode)
                 .data("base64WebLinkQrCode", webLinkQrCode)
                 .data("credential_metadata",
-                        oidcCredentialIssuerMetadata.getCredentialConfigurations().get(credentialId));
+                        credentialIssuerMetadata.getCredentialConfigurations().get(credentialId));
     }
 
     // TODO: update to return Uni
@@ -117,7 +119,7 @@ public class SoftwareCredentialsAcademy {
 
         // return "credential_offer_uri=" +
         // OidcCommonUtils.urlEncode(credentialOfferUri);
-        HttpResponse<Buffer> response = oidcProviderClient.getWebClient().getAbs(credentialOfferUri)
+        HttpResponse<Buffer> response = getWebClient().getAbs(credentialOfferUri)
                 .bearerTokenAuthentication(accessToken.getToken()).putHeader("Accept", "application/json").send()
                 .await().indefinitely();
 
@@ -149,10 +151,10 @@ public class SoftwareCredentialsAcademy {
     // TODO: update to return Uni
     private String getCredentialOfferUri(String credentialId) {
 
-        String credOfferEndpoint = oidcCredentialIssuerMetadata.getAuthServerUrl()
+        String credOfferEndpoint = credentialIssuerMetadata.getAuthServerUrl()
                 + "/protocol/oid4vc/credential-offer-uri?credential_configuration_id=" + credentialId;
 
-        HttpResponse<Buffer> credOfferUriResponse = oidcProviderClient.getWebClient().getAbs(credOfferEndpoint)
+        HttpResponse<Buffer> credOfferUriResponse = getWebClient().getAbs(credOfferEndpoint)
                 .bearerTokenAuthentication(accessToken.getToken()).putHeader("Accept", "application/json").send()
                 .await().indefinitely();
 
@@ -175,8 +177,8 @@ public class SoftwareCredentialsAcademy {
     @Path(".well-known/openid-credential-issuer")
     @Produces("application/json")
     public String getCredentialMetadata() {
-        JsonObject json = new JsonObject(oidcCredentialIssuerMetadata.getMetadata().toString());
-        json.put(OidcCredentialIssuerMetadata.CREDENTIAL_ENDPOINT,
+        JsonObject json = new JsonObject(credentialIssuerMetadata.getMetadata().toString());
+        json.put(CredentialIssuerMetadata.CREDENTIAL_ENDPOINT,
                 issuerHost + "/software-credentials-academy/credential_endpoint");
         return json.toString();
     }
@@ -186,8 +188,8 @@ public class SoftwareCredentialsAcademy {
     @Produces("application/json")
     @Consumes("application/json")
     public Uni<String> credentialEndpoint(@HeaderParam("Authorization") String authorization, String json) {
-        LOG.infof("Proxying a credential request %s to %s", json, oidcCredentialIssuerMetadata.getCredentialEndpoint());
-        return oidcProviderClient.getWebClient().postAbs(oidcCredentialIssuerMetadata.getCredentialEndpoint())
+        LOG.infof("Proxying a credential request %s to %s", json, credentialIssuerMetadata.getCredentialEndpoint());
+        return getWebClient().postAbs(credentialIssuerMetadata.getCredentialEndpoint())
                 .putHeader("Authorization", authorization).putHeader("Content-Type", "application/json")
                 .putHeader("Accept", "application/json").send().onItem().transform(httpResp -> httpResp.bodyAsString());
     }
@@ -195,5 +197,9 @@ public class SoftwareCredentialsAcademy {
     private String getUserFirstName() {
         String firstName = idToken.getClaim("given_name");
         return firstName == null ? idToken.getName() : firstName;
+    }
+    
+    private WebClient getWebClient() {
+        return ((OidcProviderClientImpl)io.quarkus.arc.ClientProxy.unwrap(oidcProviderClient)).getWebClient();
     }
 }
