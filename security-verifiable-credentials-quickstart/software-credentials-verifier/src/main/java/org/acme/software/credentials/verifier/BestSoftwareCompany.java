@@ -40,7 +40,7 @@ public class BestSoftwareCompany {
     @ConfigProperty(name = "wallet.host")
     String walletHost;
 
-    @ConfigProperty(name = "verifier.host")
+    @ConfigProperty(name = "quarkus.oidvp.verifier-host")
     String verifierHost;
 
     @Inject
