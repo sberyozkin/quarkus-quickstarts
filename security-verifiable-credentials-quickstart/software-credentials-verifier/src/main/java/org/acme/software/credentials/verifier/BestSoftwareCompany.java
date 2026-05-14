@@ -1,6 +1,8 @@
 package org.acme.software.credentials.verifier;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.acme.software.credentials.utils.QrCodeUtils;
@@ -13,7 +15,6 @@ import io.quarkiverse.oidvc.CredentialIssuerMetadata;
 import io.quarkiverse.oidvc.CredentialIssuerMetadata.CredentialConfiguration;
 import io.quarkiverse.oidvp.VerifiablePresentation;
 import io.quarkiverse.oidvp.VerifiablePresentations;
-import io.quarkus.oidc.common.runtime.OidcCommonUtils;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.security.Authenticated;
@@ -87,7 +88,7 @@ public class BestSoftwareCompany {
         String authorizationUri = rc.get("vp_authorization_uri");
 
         String authorizationRequest = authorizationUri + "&dcql_query="
-                + OidcCommonUtils.urlEncode(dcqlQuery.toString()) + "&scope="
+                + URLEncoder.encode(dcqlQuery.toString(), StandardCharsets.UTF_8) + "&scope="
                 + oidcCredentialIssuerMetadata.getCredentialConfigurations().get(credentialId).scope();
 
         String webLink = walletHost + "/software-credentials-wallet/credential-presentation?" + authorizationRequest;

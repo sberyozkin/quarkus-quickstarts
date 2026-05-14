@@ -37,7 +37,6 @@ import io.vertx.mutiny.core.MultiMap;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -45,7 +44,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
@@ -329,7 +327,6 @@ public class SoftwareCredentialsWallet {
     @Authenticated
     @Produces("text/plain")
     public Response presentCredential(
-            @CookieParam("vp_state") Cookie vpState,
             @FormParam("response_uri") String credentialResponseUri,
             @FormParam("client_id") String clientId,
             @FormParam("dcql_query") String dcqlQuery, @FormParam("state") String state,
@@ -350,7 +347,6 @@ public class SoftwareCredentialsWallet {
         presentationForm.add("state", state);
 
         JsonObject json = oidcProviderClient.getWebClient().postAbs(credentialResponseUri)
-                .putHeader("Cookie", "vp_state=" + vpState.getValue())
                 .putHeader("Content-Type", "application/x-www-form-urlencoded").putHeader("Accept", "application/json")
                 .sendForm(presentationForm).await().indefinitely().bodyAsJsonObject();
 

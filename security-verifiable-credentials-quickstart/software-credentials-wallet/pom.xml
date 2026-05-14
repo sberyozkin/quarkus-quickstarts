@@ -50,11 +50,6 @@
             <artifactId>quarkus-rest-qute</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.quarkiverse.barcode</groupId>
-            <artifactId>quarkus-zxing</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm-panache</artifactId>
         </dependency>
