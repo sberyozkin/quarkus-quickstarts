@@ -14,6 +14,7 @@ import io.quarkus.oidc.AccessTokenCredential;
 import io.quarkus.oidc.IdToken;
 import io.quarkus.oidc.OidcProviderClient;
 import io.quarkus.oidc.common.runtime.OidcCommonUtils;
+import io.quarkus.oidc.common.runtime.OidcWebClient;
 import io.quarkus.oidc.runtime.OidcProviderClientImpl;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
@@ -22,7 +23,6 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
-import io.vertx.mutiny.ext.web.client.WebClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -199,7 +199,7 @@ public class SoftwareCredentialsAcademy {
         return firstName == null ? idToken.getName() : firstName;
     }
     
-    private WebClient getWebClient() {
+    private OidcWebClient getWebClient() {
         return ((OidcProviderClientImpl)io.quarkus.arc.ClientProxy.unwrap(oidcProviderClient)).getWebClient();
     }
 }
