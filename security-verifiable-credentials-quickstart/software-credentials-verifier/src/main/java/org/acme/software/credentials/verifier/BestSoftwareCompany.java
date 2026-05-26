@@ -114,6 +114,8 @@ public class BestSoftwareCompany {
         List<VerifiablePresentation> presentations = verifiablePresentations.getAll();
         SDJWT sdjwt = presentations.get(0).sdjwt();
 
+        LOG.infof("SD-JWT presentation: %s", sdjwt.toString());
+        
         return bestSoftwareCompanyPresentationConfirmation.data("disclosures", sdjwt.getDisclosures())
                 .data("credential_metadata", getCredentialsMetadata(vctValue));
     }
@@ -133,8 +135,7 @@ public class BestSoftwareCompany {
     @Path("/presentation")
     @Authenticated
     public PresentationConfirmation presentation(@Context UriInfo uriInfo) {
-        LOG.infof("Credential %s was accepted for %s", securityIdentity.getAttribute("credential"),
-                securityIdentity.getPrincipal().getName());
+        LOG.infof("Credential %s was accepted", (Object) securityIdentity.getAttribute("credential"));
         String vct = securityIdentity.getAttribute("vct");
         String responseCode = rc.get("vp_response_code");
 
